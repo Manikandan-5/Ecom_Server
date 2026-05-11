@@ -32,12 +32,19 @@ const productSchema = new mongoose.Schema(
       default: 0
     },
 
-    sizes: [
-      {
-        type: String,
-        enum: ["SM", "MD", "LG", "XL"]
-      }
-    ],
+   sizes: [{
+  type: String,
+  enum: [
+    "SM",
+    "MD",
+    "LG",
+    "XL",
+    "0-3 Months",
+    "0-6 Months",
+    "0-12 Months",
+    "1-2 Years"
+  ]
+}],
 
     reviews: {
       type: Number,

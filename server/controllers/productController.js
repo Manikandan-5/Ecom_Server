@@ -1,50 +1,137 @@
 const Product = require("../models/Product");
 
-exports.createProduct = async (req, res, next) => {
+// CREATE PRODUCT
+exports.createProduct = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const product = await Product.create(req.body);
-    res.json(product);
+    const product =
+      await Product.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      product,
+    });
+
   } catch (err) {
     next(err);
   }
 };
 
-exports.getProducts = async (req, res, next) => {
+// GET PRODUCTS WITH PAGINATION
+exports.getProducts = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (err) {
-    next(err);
-  }
-};
 
-exports.updateProduct = async (req, res, next) => {
-  try {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
+    // PAGE & LIMIT
+    const page =
+      Number(req.query.page) || 1;
+
+    const limit =
+      Number(req.query.limit) || 6;
+
+    // SKIP
+    const skip = (page - 1) * limit;
+
+    // TOTAL PRODUCTS
+    const totalProducts =
+      await Product.countDocuments();
+
+    // PRODUCTS
+    const products = await Product.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // TOTAL PAGES
+    const totalPages = Math.ceil(
+      totalProducts / limit
     );
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    res.status(200).json({
+      success: true,
 
-    res.json(product);
+      products,
+
+      currentPage: page,
+
+      totalPages,
+
+      totalProducts,
+
+      limit,
+    });
+
   } catch (err) {
     next(err);
   }
 };
 
-exports.deleteProduct = async (req, res, next) => {
+// UPDATE PRODUCT
+exports.updateProduct = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+
+    const product =
+      await Product.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
 
     if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
     }
 
-    res.json({ message: "Deleted successfully" });
+    res.status(200).json({
+      success: true,
+      product,
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE PRODUCT
+exports.deleteProduct = async (
+  req,
+  res,
+  next
+) => {
+  try {
+
+    const product =
+      await Product.findByIdAndDelete(
+        req.params.id
+      );
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Deleted successfully",
+    });
+
   } catch (err) {
     next(err);
   }

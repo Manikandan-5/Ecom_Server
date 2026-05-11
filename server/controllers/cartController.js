@@ -1,27 +1,57 @@
 const Cart = require("../models/Cart");
 
-exports.addToCart = async (req, res, next) => {
+exports.addToCart = async (
+  req,
+  res,
+  next
+) => {
   try {
-    const { productId, quantity } = req.body;
 
-    let cart = await Cart.findOne({ userId: req.user.id });
+    const {
+      userId,
+      email,
+      items,
+      totalAmount,
+    } = req.body;
 
-    if (!cart) {
-      cart = await Cart.create({
-        userId: req.user.id,
-        items: [{ productId, quantity }]
-      });
-    } else {
-      cart.items.push({ productId, quantity });
+    // CHECK EXISTING CART
+    let cart = await Cart.findOne({
+      userId,
+    });
+
+    // UPDATE CART
+    if (cart) {
+
+      cart.items = items;
+
+      cart.totalAmount = totalAmount;
+
+      cart.email = email;
+
       await cart.save();
+
     }
 
-    res.json(cart);
-  } catch (err) {
-    next(err);
+    // CREATE CART
+    else {
+
+      cart = await Cart.create({
+        userId,
+        email,
+        items,
+        totalAmount,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      cart,
+    });
+
+  } catch (error) {
+    next(error);
   }
 };
-
 exports.getCart = async (req, res, next) => {
   try {
     const cart = await Cart.findOne({ userId: req.user.id }).populate("items.productId");

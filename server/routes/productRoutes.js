@@ -15,7 +15,7 @@ console.log("createProduct:", createProduct);
 console.log("getProducts:", getProducts);
 
 router.get("/", getProducts);
-router.post("/", protect,  createProduct);
+router.post("/", protect, adminOnly, createProduct);
 router.put("/:id", protect, adminOnly, updateProduct);
 router.delete("/:id", protect, adminOnly, deleteProduct);
 
